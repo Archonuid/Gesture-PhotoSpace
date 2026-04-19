@@ -1,0 +1,4 @@
+repository "Gesture PhotoSpace/Gesture PhotoSpace@13469895246009@cloud"
+  path "/"
+    br "/main"
+    co "/main"

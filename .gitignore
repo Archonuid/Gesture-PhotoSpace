@@ -1,0 +1,41 @@
+# Unity generated folders
+Library/
+Temp/
+Obj/
+Build/
+Builds/
+Logs/
+UserSettings/
+MemoryCaptures/
+
+# Visual Studio / Rider
+.vs/
+*.csproj
+*.unityproj
+*.sln
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Unity cache
+*.apk
+*.aab
+*.unitypackage
+
+# Rider
+.idea/
+
+# Python (your gesture system)
+__pycache__/
+*.pyc
+
+# MediaPipe / temp outputs (if any)
+*.mp4
+*.avi
