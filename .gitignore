@@ -39,3 +39,9 @@ __pycache__/
 # MediaPipe / temp outputs (if any)
 *.mp4
 *.avi
+
+# Python
+gesture_tracking/__pycache__/
+gesture_tracking/*.pyc
+gesture_tracking/.venv/
+gesture_tracking/venv/
