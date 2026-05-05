@@ -147,28 +147,26 @@ public class RibbonLayout : MonoBehaviour
 
                 Renderer renderer = photo.GetComponent<Renderer>();
 
-                if (isSelected)
+                // DO NOT touch scale if image is open
+                if (!receiver.imageOpen)
                 {
-                    photo.localScale = Vector3.Lerp(
-                        photo.localScale,
-                        new Vector3(selectedScale, selectedScale, 1f),
-                        Time.deltaTime * 8f
-                    );
-
-                    renderer.material.EnableKeyword("_EMISSION");
-                    renderer.material.SetColor("_EmissionColor", Color.yellow * 2f);
+                    if (isSelected)
+                    {
+                        photo.localScale = Vector3.Lerp(
+                            photo.localScale,
+                            new Vector3(selectedScale, selectedScale, 1f),
+                            Time.deltaTime * 8f
+                        );
+                    }
+                    else
+                    {
+                        photo.localScale = Vector3.Lerp(
+                            photo.localScale,
+                            new Vector3(normalScale, normalScale, 1f),
+                            Time.deltaTime * 8f
+                        );
+                    }
                 }
-                else
-                {
-                    photo.localScale = Vector3.Lerp(
-                        photo.localScale,
-                        new Vector3(normalScale, normalScale, 1f),
-                        Time.deltaTime * 8f
-                    );
-
-                    renderer.material.DisableKeyword("_EMISSION");
-                }
-
                 index++;
             }
         }

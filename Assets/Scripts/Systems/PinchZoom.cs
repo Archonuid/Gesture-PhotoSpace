@@ -7,10 +7,12 @@ public class PinchZoom : MonoBehaviour
     public float viewDistance = 2.8f;
     public float minScale = 8f;
     public float maxScale = 18f;
-
     Transform activePhoto;
-
     bool viewingImage = false;
+    Vector3 baseScale;
+    float currentZoom = 1f;
+    public float minZoom = 0.6f;
+    public float maxZoom = 2.5f;
 
     void Update()
     {
@@ -42,67 +44,51 @@ public class PinchZoom : MonoBehaviour
     void EnterImageView()
     {
         activePhoto = ribbonLayout.GetSelectedPhoto();
-
-        if (activePhoto == null)
-            return;
+        if (activePhoto == null) return;
 
         viewingImage = true;
-
         ribbonLayout.LockNavigation();
 
-        Renderer renderer = activePhoto.GetComponent<Renderer>();
+        Renderer r = activePhoto.GetComponent<Renderer>();
+        Texture tex = r.material.mainTexture;
+        if (tex == null) return;
 
-        if (renderer == null)
-            return;
+        float aspect = (float)tex.width / tex.height;
 
-        Texture tex = renderer.material.mainTexture;
+        // FIXED VIEW SIZE (no FOV math, no growth)
+        float targetHeight = 6f;
+        float targetWidth  = targetHeight * aspect;
 
-        if (tex == null)
-            return;
+        baseScale = new Vector3(targetWidth, targetHeight, 1f);
 
-        float width = tex.width;
-        float height = tex.height;
+        currentZoom = 1f;
+        activePhoto.localScale = baseScale;
 
-        float aspect = width / height;
-
-        float baseSize = 10f;
-
-        float scaleX;
-        float scaleY;
-
-        if (aspect >= 1f)
-        {
-            scaleX = baseSize;
-            scaleY = baseSize / aspect;
-        }
-        else
-        {
-            scaleX = baseSize * aspect;
-            scaleY = baseSize;
-        }
-
-        activePhoto.localScale = new Vector3(scaleX, scaleY, 1f);
+        // keep same distance behavior as before
     }
 
     void ExitImageView()
     {
         viewingImage = false;
-
         ribbonLayout.UnlockNavigation();
+
+        if (activePhoto != null)
+        {
+            // Reset cleanly so ribbon takes over
+            activePhoto.localScale = new Vector3(2.2f, 2.2f, 1f);
+        }
 
         activePhoto = null;
     }
 
     void UpdateZoom()
     {
-        if (activePhoto == null)
-            return;
+        if (activePhoto == null) return;
 
         Transform cam = Camera.main.transform;
 
         Vector3 targetPos =
-            cam.position +
-            cam.forward * viewDistance;
+            cam.position + cam.forward * viewDistance;
 
         activePhoto.position = Vector3.Lerp(
             activePhoto.position,
@@ -113,16 +99,17 @@ public class PinchZoom : MonoBehaviour
         activePhoto.rotation =
             Quaternion.LookRotation(activePhoto.position - cam.position);
 
+        // ----- FIXED ZOOM MODEL -----
+
         float pinch = receiver.pinchDistance;
 
-        float zoom = Mathf.Lerp(1f, 2.2f, receiver.pinchDistance);
+        // Map pinch → zoom (NOT using current scale)
+        float targetZoom = Mathf.Lerp(minZoom, maxZoom, pinch);
 
-        Vector3 targetScale = activePhoto.localScale.normalized * zoom * activePhoto.localScale.magnitude;
+        // Smooth zoom
+        currentZoom = Mathf.Lerp(currentZoom, targetZoom, Time.deltaTime * 8f);
 
-        activePhoto.localScale = Vector3.Lerp(
-            activePhoto.localScale,
-            targetScale,
-            Time.deltaTime * 6f
-        );
+        // Apply safely (no compounding)
+        activePhoto.localScale = baseScale * currentZoom;
     }
 }
